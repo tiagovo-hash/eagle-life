@@ -457,7 +457,9 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
   let renderer;
   try { renderer = new THREE.WebGLRenderer({ canvas: $('scene'), antialias: true, powerPreference: 'high-performance' }); }
   catch (err) { fatal("This device couldn't start 3D graphics here. Try a recent iPhone or iPad, or another browser."); return; }
-  let pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const maxPR = Math.min(window.devicePixelRatio || 1, 1.5);
+  let pixelRatio = maxPR;
   renderer.setPixelRatio(pixelRatio);
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.9;
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.shadowMap.autoUpdate = false;
@@ -1028,7 +1030,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
   const ripples = []; for (let i = 0; i < 8; i++) ripples.push(new THREE.Vector4(0, 0, -100, 0));
   let rippleIdx = 0;
   function addRipple(x, z, strength) { ripples[rippleIdx = (rippleIdx + 1) % ripples.length].set(x, z, S.time, strength || 1); }
-  const reflect = { on: false, rt: null, cam: new THREE.PerspectiveCamera(), texMat: new THREE.Matrix4(), scale: 0.5, rendered: false };
+  const reflect = { on: false, rt: null, cam: new THREE.PerspectiveCamera(), texMat: new THREE.Matrix4(), scale: isMobile ? 0.38 : 0.5, rendered: false };
   {
     const gl2 = renderer.capabilities.isWebGL2;
     const half = gl2 && (renderer.extensions.has('EXT_color_buffer_float') || renderer.extensions.has('EXT_color_buffer_half_float'));
@@ -1113,7 +1115,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     scene.add(m); waterMeshes.push(m);
   }
 
-  const reflectHide = []; // near-field clutter skipped in the mirror pass
+  const reflectHide = [], reflectLite = [], treeChunks = []; // things skipped in the mirror pass, and the tree batches
   const rPlane = new THREE.Plane(), rClip = new THREE.Vector4(), rQ = new THREE.Vector4(), rN = new THREE.Vector3(0, 1, 0), rP = new THREE.Vector3(0, WATER_Y, 0);
   const rLook = new THREE.Vector3(), rRot = new THREE.Matrix4(), rFrustum = new THREE.Frustum(), rPV = new THREE.Matrix4();
   function renderReflection() {
@@ -1137,7 +1139,10 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     rClip.multiplyScalar(2 / rClip.dot(rQ));
     pm[2] = rClip.x; pm[6] = rClip.y; pm[10] = rClip.z + 1 - 0.003; pm[14] = rClip.w;
     for (const m of waterMeshes) m.visible = false;
-    const hidden = reflectHide.filter((o) => o.visible); for (const o of hidden) o.visible = false;
+    const hidden = [];
+    for (const o of reflectHide) if (o.visible) { o.visible = false; hidden.push(o); }
+    for (const o of reflectLite) if (o.visible) { o.visible = false; hidden.push(o); }
+    for (const o of treeChunks) if (o.visible && o.userData.center.distanceTo(camera.position) > 520 + o.userData.radius) { o.visible = false; hidden.push(o); }
     sky.position.copy(cam.position);
     renderer.setRenderTarget(reflect.rt); renderer.render(scene, cam); renderer.setRenderTarget(null);
     renderer.shadowMap.needsUpdate = false;
@@ -1323,11 +1328,11 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
       const autumn = type !== 0 && rng() < 0.07;
       b.list.push(m4.clone(), autumn ? new THREE.Color().setRGB(rand(1.25, 1.45), rand(0.95, 1.1), rand(0.45, 0.6)) : new THREE.Color().setRGB(rand(0.82, 1.08), rand(0.86, 1.1), rand(0.8, 1.02)));
     }
-    for (const b of buckets.values()) instanced(treeGeos[b.type][b.variant], foliageMat, b.list, true);
+    for (const b of buckets.values()) { const im = instanced(treeGeos[b.type][b.variant], foliageMat, b.list, true); im.userData.center = im.boundingSphere.center.clone(); im.userData.radius = im.boundingSphere.radius; treeChunks.push(im); }
 
     // boulders: lumpy, mossy on top, textured from three sides (no seams)
     const rockGeo = (() => {
-      const src = new THREE.IcosahedronGeometry(1, 3), p = src.attributes.position, map = new Map(), P = [], I = [];
+      const src = new THREE.IcosahedronGeometry(1, 2), p = src.attributes.position, map = new Map(), P = [], I = [];
       for (let i = 0; i < p.count; i++) {
         const k = p.getX(i).toFixed(4) + ',' + p.getY(i).toFixed(4) + ',' + p.getZ(i).toFixed(4); let j = map.get(k);
         if (j === undefined) { j = P.length / 3; map.set(k, j); P.push(p.getX(i), p.getY(i), p.getZ(i)); }
@@ -1370,7 +1375,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     const rockMesh = new THREE.InstancedMesh(rockGeo, rockMat, rockList.length / 2);
     for (let k = 0; k < rockList.length / 2; k++) { rockMesh.setMatrixAt(k, rockList[k * 2]); rockMesh.setColorAt(k, rockList[k * 2 + 1]); }
     rockMesh.instanceMatrix.needsUpdate = true; rockMesh.instanceColor.needsUpdate = true; rockMesh.computeBoundingSphere();
-    rockMesh.castShadow = true; rockMesh.receiveShadow = true; scene.add(rockMesh);
+    rockMesh.castShadow = true; rockMesh.receiveShadow = true; scene.add(rockMesh); reflectLite.push(rockMesh);
 
     // fallen logs and stumps on the forest floor
     const logGeo = new THREE.CylinderGeometry(0.32, 0.36, 1, 10, 1); logGeo.rotateZ(Math.PI / 2);
@@ -1388,7 +1393,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
         stumps.push(m4.clone(), new THREE.Color().setRGB(rand(0.8, 1), rand(0.78, 0.95), rand(0.72, 0.9)));
       }
     }
-    instanced(logGeo, barkMat, logs, true); instanced(stumpGeo, barkMat, stumps, true);
+    reflectLite.push(instanced(logGeo, barkMat, logs, true), instanced(stumpGeo, barkMat, stumps, true));
 
     const bushGeos = [buildBush(5), buildBush(6)]; const bushLists = [[], []];
     for (let i = 0; i < 12000 && bushLists[0].length + bushLists[1].length < 2400; i++) {
@@ -1400,7 +1405,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
       e3.set(0, rand(0, TAU), 0); q4.setFromEuler(e3); m4.compose(v3.set(x, y - 0.1, z), q4, s3.set(s * rand(1, 1.4), s * rand(0.7, 1.1), s * rand(1, 1.4)));
       bushLists[i % 2].push(m4.clone(), new THREE.Color().setRGB(rand(0.75, 1.1), rand(0.8, 1.1), rand(0.7, 1.0)));
     }
-    bushLists.forEach((l, k) => instanced(bushGeos[k], foliageMat, l, false));
+    bushLists.forEach((l, k) => reflectLite.push(instanced(bushGeos[k], foliageMat, l, false)));
   }
 
   // ground cover (grass, ferns, flowers) only near the eagle, rebuilt as it moves
@@ -2869,13 +2874,16 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
   }
 
   // ---------------------------------------------------------------- loop
-  let quality = 3, qualityLocked = false, lastFps = 0;
+  // quality 3: lake reflections + shadows · 2: shadows · 1: lighter grass, shorter view · 0: lowest resolution
+  let quality = isMobile ? 2 : 3, qualityLocked = false, lastFps = 0, dropped = false, goodWindows = 0, treeDrawDist = Infinity;
   function applyQuality() {
     reflect.on = quality >= 3;
     sunLight.castShadow = quality >= 2;
     const dens = quality >= 2 ? 1 : quality === 1 ? 0.55 : 0.3;
     if (dens !== coverDensity) { coverDensity = dens; coverCenter.set(1e9, 1e9); }
-    if (quality <= 0 && pixelRatio > 1) { pixelRatio = 1; renderer.setPixelRatio(1); resize(); }
+    treeDrawDist = quality >= 2 ? Infinity : quality === 1 ? 1000 : 780;
+    const pr = quality >= 2 ? maxPR : quality === 1 ? Math.min(maxPR, 1.25) : 1;
+    if (pr !== pixelRatio) { pixelRatio = pr; renderer.setPixelRatio(pr); resize(); }
   }
   function syncPlayerModel(dt) {
     const grounded = isGrounded();
@@ -2939,6 +2947,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     const agl = S.pos.y - Math.max(heightAt(S.pos.x, S.pos.z), WATER_Y);
     const showCover = agl < 80 && S.mode !== 'attract';
     for (const k in cover) cover[k].visible = showCover;
+    for (const c of treeChunks) c.visible = treeDrawDist === Infinity || c.userData.center.distanceTo(camera.position) < treeDrawDist + c.userData.radius;
     if (showCover && (S.pos.x - coverCenter.x) ** 2 + (S.pos.z - coverCenter.y) ** 2 > 36) rebuildCover(S.pos.x, S.pos.z);
     updateSun(); updateParticles(dt); updateMarkers(); updateHud(dt);
   }
@@ -2964,7 +2973,11 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     perfT += dt; perfFrames++;
     if (perfT >= 3) {
       lastFps = perfFrames / perfT; perfT = 0; perfFrames = 0;
-      if ((S.mode === 'play' || S.mode === 'attract') && quality > 0 && !qualityLocked && lastFps < 45) { quality--; applyQuality(); }
+      if ((S.mode === 'play' || S.mode === 'attract') && !qualityLocked) {
+        if (lastFps < 45 && quality > 0) { quality--; dropped = true; goodWindows = 0; applyQuality(); }
+        else if (!dropped && quality < 3 && lastFps >= 57) { if (++goodWindows >= 2) { quality++; goodWindows = 0; applyQuality(); } }
+        else goodWindows = 0;
+      }
     }
   }
 
