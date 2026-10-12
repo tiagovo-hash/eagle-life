@@ -16,7 +16,7 @@ On iPad, open the game in Safari, tap Share and choose **Add to Home Screen** to
 | `index.html` | The whole game in one file. three.js and the fonts are embedded, so the page loads nothing from other servers. |
 | `privacy.html` | Privacy policy in English and Portuguese. Use this URL in App Store Connect. |
 | `support.html` | Help, FAQ and contact in English and Portuguese. Use this URL in App Store Connect. |
-| `THIRD_PARTY_LICENSES.md` | Licenses of three.js and the Barlow fonts. |
+| `CREDITS.md` | Credits and the licenses of three.js and the Barlow fonts. |
 
 ## Privacy
 
@@ -90,6 +90,6 @@ The suggested points add up to 700. Game Center allows up to 100 points per achi
 
 - 3D engine: [three.js](https://threejs.org) r159, MIT License, Copyright © 2010-2023 three.js authors.
 - Fonts: [Barlow and Barlow Condensed](https://github.com/jpt/barlow) by Jeremy Tribby, SIL Open Font License 1.1, Copyright 2017 The Barlow Project Authors.
-- Full license texts: [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
+- Full license texts: [CREDITS.md](CREDITS.md).
 
 The game's code, models, textures and sounds are made by the game itself. © 2026 Tiago Valent. All rights reserved.

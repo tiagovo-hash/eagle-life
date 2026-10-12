@@ -1,6 +1,8 @@
-# Third-party licenses
+# Credits
 
-Eagle Life (`index.html`) includes the following software and fonts.
+Eagle Life is © 2026 Tiago Valent. All rights reserved. The game's code, models, textures and sounds are made by the game itself.
+
+The game page (`index.html`) also includes the following software and fonts from other authors, under their own licenses.
 
 ## three.js r159
 
