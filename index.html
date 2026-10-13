@@ -47,6 +47,7 @@
   color-scheme: dark;
 }
 [hidden] { display: none !important; }
+html.native [data-web], html:not(.native) [data-native] { display: none !important; }
 html { height: 100%; box-sizing: border-box; background: var(--bg); }
 *, *::before, *::after { box-sizing: border-box; }
 body {
@@ -357,7 +358,7 @@ button:focus-visible { outline: 3px solid var(--talon); outline-offset: 2px; }
 
   <div id="ov-start" class="overlay">
     <div class="card">
-      <div class="eyebrow">Prototype 0.4 · Forest</div>
+      <div class="eyebrow">Version 1.0 · Forest</div>
       <h1>Eagle Life</h1>
       <p class="lede">You are a bald eagle. Survive the forest, build a nest and raise a family.</p>
       <div class="actions">
@@ -370,7 +371,7 @@ button:focus-visible { outline: 3px solid var(--talon); outline-offset: 2px; }
         <button class="menu-btn" data-open="ov-rank" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4h6v16H9zM3 11h5v9H3zm13 3h5v6h-5z"/></svg>Ranking</button>
         <button class="menu-btn" data-open="ov-about" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20zm-1.1 8v8h2.2v-8zm1.1-4.3a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8z"/></svg>About</button>
       </nav>
-      <p class="fine">Best in landscape. Keyboard: arrows or WASD · click animals and water · Space for Eagle Eye · P to pause.<br>
+      <p class="fine"><span data-web>Best in landscape. Keyboard: arrows or WASD · click animals and water · Space for Eagle Eye · P to pause.<br></span>
         <button class="linkish" type="button" data-gate="privacy">Privacy policy</button> · <button class="linkish" type="button" data-gate="support">Support</button> · © 2026 Tiago Valent</p>
     </div>
   </div>
@@ -409,7 +410,7 @@ button:focus-visible { outline: 3px solid var(--talon); outline-offset: 2px; }
     <div class="card">
       <div class="eyebrow">Forest complete</div>
       <h2>Your family is growing</h2>
-      <p class="lede">The chick is fed and strong. Keep flying, hunting and feeding it. The mountains and the savanna come next.</p>
+      <p class="lede">The chick is fed and strong. Keep flying, hunting and feeding it.</p>
       <div class="result"><div><span>Score</span><b id="done-score">0</b></div><div><span>Time</span><b id="done-time">0:00</b></div></div>
       <p class="fine record" id="done-rank"></p>
       <p class="fine" id="done-achv" hidden></p>
@@ -463,7 +464,10 @@ button:focus-visible { outline: 3px solid var(--talon); outline-offset: 2px; }
     <div class="card wide">
       <div class="panel-head"><div><div class="eyebrow" id="achv-summary">Achievements</div><h2>Achievements</h2></div><button class="btn secondary" type="button" data-back>Back</button></div>
       <ul class="achv-grid" id="achv-list"></ul>
-      <p class="fine">Saved on this device. They will also count on Game Center when Eagle Life comes to the App Store.</p>
+      <div class="actions" data-native><button class="btn secondary" type="button" id="btn-gc-achv">Open in Game Center</button></div>
+      <p class="fine" data-web>Saved on this device.</p>
+      <p class="fine" data-native>Saved on this device. When you are signed in to Game Center, they also unlock there.</p>
+      <p class="fine record" id="gc-msg-achv" aria-live="polite"></p>
     </div>
   </div>
 
@@ -476,16 +480,19 @@ button:focus-visible { outline: 3px solid var(--talon); outline-offset: 2px; }
       </div>
       <ol class="rank-list" id="rank-list"></ol>
       <label class="field">Player name on this device<input id="rank-name" type="text" maxlength="14" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="Your name"></label>
-      <p class="fine">The ranking is saved on this device only. An online ranking between players will come with Game Center in the App Store version.</p>
+      <div class="actions" data-native><button class="btn" type="button" id="btn-gc-rank">Online ranking on Game Center</button></div>
+      <p class="fine" data-web>This ranking is saved on this device only.</p>
+      <p class="fine" data-native>This list is saved on this device. Your best score and fastest time also go to the Game Center leaderboards when you are signed in.</p>
+      <p class="fine record" id="gc-msg" aria-live="polite"></p>
     </div>
   </div>
 
   <div id="ov-about" class="overlay" hidden>
     <div class="card wide">
-      <div class="panel-head"><div><div class="eyebrow">Prototype 0.4 · Forest</div><h2>About Eagle Life</h2></div><button class="btn secondary" type="button" data-back>Back</button></div>
+      <div class="panel-head"><div><div class="eyebrow">Version 1.0 · Forest</div><h2>About Eagle Life</h2></div><button class="btn secondary" type="button" data-back>Back</button></div>
       <p class="body">A game by Tiago Valent. © 2026 Tiago Valent. All rights reserved.</p>
       <h3>Privacy</h3>
-      <p class="body">Eagle Life collects no personal data. There are no accounts, ads, analytics, tracking or purchases. Your progress, achievements, ranking and player name stay on this device.</p>
+      <p class="body">Eagle Life collects no personal data. There are no accounts, ads, analytics, tracking or purchases. Your progress, achievements, ranking and player name stay on this device.<span data-native> Game Center is optional and run by Apple: when you are signed in, your scores and achievements are sent to it.</span></p>
       <div class="actions"><button class="btn secondary" type="button" data-gate="privacy">Privacy policy</button><button class="btn secondary" type="button" data-gate="support">Support</button></div>
       <h3>Credits</h3>
       <ul class="credits">
@@ -2102,6 +2109,8 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     let ctx = null, master = null, windGain = null, windFilter = null, muted = false;
     function init() {
       if (ctx) return;
+      // iOS: play like a game (mixes with other audio, follows the silent switch)
+      try { if (navigator.audioSession) navigator.audioSession.type = 'ambient'; } catch (e) { /* not supported */ }
       try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { ctx = null; return; }
       master = ctx.createGain(); master.gain.value = muted ? 0 : 0.9; master.connect(ctx.destination);
       const len = ctx.sampleRate * 2; const buf = ctx.createBuffer(1, len, ctx.sampleRate); const d = buf.getChannelData(0); let last = 0;
@@ -2964,11 +2973,42 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
       reset() { mem = blank(); try { localStorage.removeItem(KEY); } catch (e) { /* nothing stored */ } }
     };
   })();
-  // hook for the future native app: the iOS wrapper can forward these to Game Center
+  // ---------------------------------------------------------------- Game Center (iOS app only; the web build keeps everything on the device)
+  const NATIVE = (() => { try { return !!(window.Capacitor && typeof window.Capacitor.getPlatform === 'function' && window.Capacitor.getPlatform() === 'ios'); } catch (e) { return false; } })();
+  const GC = NATIVE && window.Capacitor.Plugins ? window.Capacitor.Plugins.EagleGameCenter || null : null;
+  if (NATIVE) document.documentElement.classList.add('native');
+  const gc = { authed: false, busy: null };
+  function gcAuthenticate() {
+    if (!GC) return Promise.reject(new Error('Game Center is available in the iPhone and iPad app.'));
+    if (gc.authed) return Promise.resolve(true);
+    if (!gc.busy) gc.busy = GC.authenticate({}).then(() => { gc.authed = true; gc.busy = null; gcSyncAll(); return true; }, (e) => { gc.busy = null; throw e; });
+    return gc.busy;
+  }
+  // everything already earned on this device goes up again after sign-in; Game Center keeps the best values
+  function gcSyncAll() {
+    if (!GC || !gc.authed) return;
+    const d = store.data;
+    for (const id of Object.keys(d.ach)) if (ACH_IDS.has(id)) GC.reportAchievement({ id: GC_PREFIX + 'ach.' + id, percent: 100 }).catch(() => {});
+    if (d.scores[0]) GC.submitScore({ leaderboard: LEADERBOARDS.score, value: d.scores[0].score }).catch(() => {});
+    if (d.times[0]) GC.submitScore({ leaderboard: LEADERBOARDS.forestTime, value: d.times[0].time * 100 }).catch(() => {});
+  }
   function gameCenter(type, id, value) {
     const detail = { type, id, value };
     try { window.dispatchEvent(new CustomEvent('eaglelife:gamecenter', { detail })); } catch (e) { /* old browser */ }
-    try { if (window.EagleLifeGameCenter && typeof window.EagleLifeGameCenter.report === 'function') window.EagleLifeGameCenter.report(detail); } catch (e) { /* native bridge missing */ }
+    if (!GC || !gc.authed) return; // reported again by gcSyncAll after the next sign-in
+    if (type === 'achievement') GC.reportAchievement({ id, percent: value }).catch(() => {});
+    else if (type === 'score') GC.submitScore({ leaderboard: id, value }).catch(() => {});
+  }
+  function gcOpen(view, msgId) {
+    const msg = $(msgId); msg.textContent = '';
+    gcAuthenticate().then(() => GC.showDashboard({ view })).catch(() => { msg.textContent = 'Sign in to Game Center in the Settings app to use it here.'; });
+  }
+  if (GC) {
+    $('btn-gc-rank').addEventListener('click', () => gcOpen('leaderboards', 'gc-msg'));
+    $('btn-gc-achv').addEventListener('click', () => gcOpen('achievements', 'gc-msg-achv'));
+    // Game Center can sign in later (for example from the Settings app); then the progress goes up
+    try { GC.addListener('authChanged', (e) => { const on = !!(e && e.authenticated); if (on && !gc.authed) { gc.authed = true; gcSyncAll(); } else if (!on) gc.authed = false; }); } catch (e) { /* older bridge */ }
+    setTimeout(() => { gcAuthenticate().catch(() => { /* the game works without Game Center */ }); }, 1200);
   }
 
   const run = { id: '', score: 0, t: 0, done: false, doneTime: 0, newAch: [] };
@@ -3121,7 +3161,8 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
   function checkGate() {
     if (parseInt($('gate-a').value, 10) !== gateAnswer) { $('gate-msg').textContent = 'Not quite. Ask a grown-up to help.'; $('gate-a').value = ''; return; }
     let w = null; try { w = window.open(gateUrl, '_blank', 'noopener'); } catch (e) { w = null; }
-    if (w) closePanel(); else $('gate-msg').textContent = 'Open this address in the browser: ' + gateUrl;
+    if (w || NATIVE) closePanel(); // in the app, the page opens in Safari and window.open returns nothing
+    else $('gate-msg').textContent = 'Open this address in the browser: ' + gateUrl;
   }
   document.addEventListener('click', (e) => {
     const t = e.target.closest && e.target.closest('[data-open],[data-back],[data-gate],[data-tab]'); if (!t) return;

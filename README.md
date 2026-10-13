@@ -28,12 +28,9 @@ Links that leave the game (privacy policy and support) are behind a parental gat
 
 ## Ranking and achievements
 
-Today the ranking (10 best scores and 10 fastest forest times) and the 15 achievements are saved on the device. The game already reports every score and achievement to a bridge, so the App Store version can send them to Game Center:
+The ranking (10 best scores and 10 fastest forest times) and the 15 achievements are saved on the device. In the iPhone and iPad app, the same page also talks to Game Center through the app's Capacitor plugin `EagleGameCenter` (`authenticate`, `submitScore`, `reportAchievement`, `showDashboard`): it signs in when the app opens, reports achievements as they unlock, sends the best score and the fastest time, and opens the Game Center screens from Ranking and Achievements. In the browser these calls are skipped; the game still fires a `eaglelife:gamecenter` event on `window` with `detail = { type, id, value }`.
 
-- a `eaglelife:gamecenter` event on `window`, with `detail = { type, id, value }`;
-- `window.EagleLifeGameCenter.report(detail)`, if a native wrapper defines it.
-
-`type` is `"score"` or `"achievement"`. Achievements are reported with `value: 100` (percent complete).
+The native project lives in the private repository `eagle-life-ios`.
 
 ### Leaderboards to create in App Store Connect (or in Xcode's Game Center configuration)
 
@@ -81,6 +78,7 @@ The suggested points add up to 700. Game Center allows up to 100 points per achi
 
 ## Versions
 
+- **1.0** (October 2026): release candidate for the App Store: Game Center in the iPhone and iPad app, Game Center buttons in Ranking and Achievements, external links open in Safari.
 - **0.4** (October 2026): score, achievements and ranking on the device, How to play, About and credits, privacy policy and support pages, parental gate, fonts embedded in the page.
 - **0.3**: realistic 3D eagle and forest; tap an animal to hunt it and tap again to eat; tap the water to drink; camera centred on the eagle.
 - **0.2**: landing, walking and taking off.
