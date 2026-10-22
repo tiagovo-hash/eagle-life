@@ -1,6 +1,6 @@
 # Eagle Life
 
-A 3D game where you live as a bald eagle: survive the forest, build a nest and raise a family. Made by Tiago Valent for iPad, iPhone and the web.
+A 3D game where you live as a bald eagle in three lands: a forest, a snowy mountain and the savanna. Hunt, build a nest, raise a family and stay safe from predators through days, nights and changing weather. Made by Tiago Valent for iPad, iPhone and the web.
 
 - **Play:** https://tiagovo-hash.github.io/eagle-life/
 - **Privacy policy:** https://tiagovo-hash.github.io/eagle-life/privacy.html
@@ -8,6 +8,17 @@ A 3D game where you live as a bald eagle: survive the forest, build a nest and r
 - **Contact:** tiagovo@icloud.com
 
 On iPad, open the game in Safari, tap Share and choose **Add to Home Screen** to play full screen.
+
+## Version 2.0 (web)
+
+- **Three lands:** Forest (wolves and a bear), Snowy Mountain (a wolf pack and a lynx, three peaks to explore and a cliff nest) and Savanna (lions, hyenas and a crocodile at the waterhole). Each land has its own goals. The chosen land is remembered on the device (`eaglelife.land`) and in the page address (`#mountain`, `#savanna`, `#forest`), so a link can open a land directly.
+- **Predators:** they chase the eagle on the ground and steal its food. The eagle is safe in the air and on branches. Tapping a predator makes the eagle dive at it and chase it off; a thief drops the food. No blood.
+- **Day and night:** 10 minutes of day and 10 of night, with sunrise, sunset, moon and stars. At night predators are bolder and their eyes glow.
+- **Weather:** every day and night brings new weather: clear, cloudy, rain, thunderstorm (blizzard on the mountain), fog (dust haze on the savanna) or snow. Snow piles up on the ground and the trees, rain wets the ground and the eagle's feathers.
+- **Family:** in the forest the chick grows up and learns to fly, following the eagle to the lake.
+- 14 new achievements, saved on the device (see below).
+
+The App Store version 1.0 is the forest only. Version 2.0 comes to the app in a later update.
 
 ## Files
 
@@ -28,7 +39,7 @@ Links that leave the game (privacy policy and support) are behind a parental gat
 
 ## Ranking and achievements
 
-The ranking (10 best scores and 10 fastest forest times) and the 15 achievements are saved on the device. In the iPhone and iPad app, the same page also talks to Game Center through the app's Capacitor plugin `EagleGameCenter` (`authenticate`, `submitScore`, `reportAchievement`, `showDashboard`): it signs in when the app opens, reports achievements as they unlock, sends the best score and the fastest time, and opens the Game Center screens from Ranking and Achievements. In the browser these calls are skipped; the game still fires a `eaglelife:gamecenter` event on `window` with `detail = { type, id, value }`.
+The ranking (10 best scores and the 15 fastest land times) and the 29 achievements are saved on the device. Only the 15 achievements of version 1.0 and the forest time go to Game Center for now. In the iPhone and iPad app, the same page also talks to Game Center through the app's Capacitor plugin `EagleGameCenter` (`authenticate`, `submitScore`, `reportAchievement`, `showDashboard`): it signs in when the app opens, reports achievements as they unlock, sends the best score and the fastest time, and opens the Game Center screens from Ranking and Achievements. In the browser these calls are skipped; the game still fires a `eaglelife:gamecenter` event on `window` with `detail = { type, id, value }`.
 
 The native project lives in the private repository `eagle-life-ios`.
 
@@ -58,6 +69,25 @@ The native project lives in the private repository `eagle-life-ios`.
 | `com.tiagovalent.eaglelife.ach.swift_wings` | Swift Wings | Complete the forest in under 15 minutes | 100 |
 | `com.tiagovalent.eaglelife.ach.explorer` | Explorer | Fly 20 km in total | 60 |
 | `com.tiagovalent.eaglelife.ach.survivor` | Survivor | Stay alive for 20 minutes in one game | 70 |
+
+### New in version 2.0 (saved on the device for now; to create in App Store Connect with the next app update)
+
+| Achievement ID | Name | How to unlock | Suggested points |
+| --- | --- | --- | --- |
+| `com.tiagovalent.eaglelife.ach.night_flight` | Night Flight | Fly under the stars at night | 20 |
+| `com.tiagovalent.eaglelife.ach.new_dawn` | New Dawn | Stay alive through a whole night | 50 |
+| `com.tiagovalent.eaglelife.ach.rain_flyer` | Rain or Shine | Fly in the rain | 20 |
+| `com.tiagovalent.eaglelife.ach.snow_flyer` | Snow Flyer | Fly while it snows | 20 |
+| `com.tiagovalent.eaglelife.ach.storm_rider` | Storm Rider | Fly while lightning strikes | 40 |
+| `com.tiagovalent.eaglelife.ach.brave_eagle` | Brave Eagle | Chase off 5 predators | 50 |
+| `com.tiagovalent.eaglelife.ach.close_call` | Close Call | Take off just before a charging predator reaches you | 30 |
+| `com.tiagovalent.eaglelife.ach.not_today` | Not Today! | Make a thief drop your food | 30 |
+| `com.tiagovalent.eaglelife.ach.snap` | Snap! | Escape the jaws of a crocodile | 30 |
+| `com.tiagovalent.eaglelife.ach.first_flight` | First Flight | Teach your young eagle to fly | 60 |
+| `com.tiagovalent.eaglelife.ach.peak_explorer` | Peak Explorer | Fly over the 3 snowy peaks | 40 |
+| `com.tiagovalent.eaglelife.ach.mountain_master` | Mountain Master | Complete the Snowy Mountain | 100 |
+| `com.tiagovalent.eaglelife.ach.savanna_king` | King of the Savanna | Complete the Savanna | 100 |
+| `com.tiagovalent.eaglelife.ach.world_traveler` | World Traveler | Complete all three lands | 100 |
 
 The suggested points add up to 700. Game Center allows up to 100 points per achievement and 1,000 points per game.
 
